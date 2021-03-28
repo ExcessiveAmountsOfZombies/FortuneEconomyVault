@@ -21,8 +21,8 @@ public class PlayerListener implements Listener {
     public void onPlayerJoin(PlayerJoinEvent event) {
         FortuneEconomy economy = plugin.economy();
         Player player = event.getPlayer();
-        if (!economy.hasAccount(player.getUniqueId())) {
-            economy.createAccount(player.getUniqueId(), player.getName());
+        if (!economy.hasAccount(player)) {
+            economy.createPlayerAccount(player);
         }
     }
 }

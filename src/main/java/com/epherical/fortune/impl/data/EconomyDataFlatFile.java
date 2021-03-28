@@ -1,5 +1,6 @@
 package com.epherical.fortune.impl.data;
 
+import com.epherical.fortune.impl.data.serializer.EconomyUserSerializer;
 import com.epherical.fortune.impl.exception.EconomyException;
 import com.epherical.fortune.impl.object.EconomyUser;
 import com.google.common.collect.Lists;
@@ -11,6 +12,7 @@ import net.milkbowl.vault.economy.EconomyResponse;
 
 import java.io.File;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -19,7 +21,7 @@ import java.util.UUID;
 import java.util.concurrent.*;
 import java.util.stream.Collectors;
 
-public class EconomyDataFlatFile implements EconomyData {
+public class EconomyDataFlatFile extends EconomyData {
 
     private final Path userFolder;
 
@@ -29,7 +31,10 @@ public class EconomyDataFlatFile implements EconomyData {
 
     public EconomyDataFlatFile(Path dataFolder, String pluginName) {
         this.userFolder = dataFolder.resolve(pluginName + File.separator + "balances");
-        this.gson = new GsonBuilder().setPrettyPrinting().create();
+        this.gson = new GsonBuilder()
+                .setPrettyPrinting()
+                .registerTypeAdapter(EconomyUser.class, new EconomyUserSerializer())
+                .create();
 
     }
 
@@ -38,9 +43,15 @@ public class EconomyDataFlatFile implements EconomyData {
     }
 
     @Override
-    public Future<EconomyUser> loadUser(UUID uuid) {
-        LoadUserCallable user = new LoadUserCallable(uuid, userFolder, gson);
-        return executor.submit(user);
+    public EconomyUser loadUser(UUID uuid) throws EconomyException {
+        try {
+            File file = new File(userFolder.resolve(uuid.toString()).toFile() + ".json");
+            try (FileReader reader = new FileReader(file)) {
+                return gson.fromJson(reader, EconomyUser.class);
+            }
+        } catch (IOException e) {
+            throw new EconomyException("Could not load user with uuid " + uuid);
+        }
     }
 
     @Override
@@ -49,34 +60,45 @@ public class EconomyDataFlatFile implements EconomyData {
     }
 
     @Override
-    public Future<Boolean> saveUser(EconomyUser user) throws EconomyException {
-        SaveCallable save = new SaveCallable(user, userFolder, gson);
-        return executor.submit(save);
-    }
-
-    @Override
-    public EconomyQuery userDeposit(EconomyUser user, double amount) {
-        try {
-            double bal = user.currentBalance() + amount;
-            user.add(amount);
-            saveUser(user);
-            return new EconomyQuery(new EconomyResponse(true, ""), amount, bal);
-        } catch (EconomyException e) {
-            e.printStackTrace();
-            return new EconomyQuery(new EconomyResponse(false, ""), 0, 0);
+    public boolean saveUser(EconomyUser user) throws EconomyException {
+        File file = new File(userFolder.resolve(user.uuid().toString()).toFile() + ".json");
+        if (!file.exists()) {
+            try {
+                file.getParentFile().mkdirs();
+                file.createNewFile();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        try (FileWriter writer = new FileWriter(file)) {
+            writer.write(gson.toJson(user, EconomyUser.class));
+            return true;
+        } catch (IOException e) {
+            throw new EconomyException("Could not save user " + user.name() + " " + user.uuid());
         }
     }
 
     @Override
-    public EconomyQuery userWithdraw(EconomyUser user, double amount) {
+    public EconomyResponse userDeposit(UUID user, double amount) {
         try {
-            double bal = user.currentBalance() - amount;
-            user.subtract(amount);
-            saveUser(user);
-            return new EconomyQuery(new EconomyResponse(true, ""), amount, bal);
-        } catch (EconomyException e) {
+            EconomyUser econUser = getUser(user);
+            econUser.add(amount);
+            return new EconomyResponse(amount, econUser.currentBalance(), EconomyResponse.ResponseType.SUCCESS, "");
+        } catch (IllegalArgumentException e) {
             e.printStackTrace();
-            return new EconomyQuery(new EconomyResponse(false, ""), 0, 0);
+            return new EconomyResponse(0, 0, EconomyResponse.ResponseType.FAILURE, e.getMessage());
+        }
+    }
+
+    @Override
+    public EconomyResponse userWithdraw(UUID user, double amount) {
+        try {
+            EconomyUser econUser = getUser(user);
+            econUser.subtract(amount);
+            return new EconomyResponse(amount, econUser.currentBalance(), EconomyResponse.ResponseType.SUCCESS, "");
+        } catch (IllegalArgumentException e) {
+            e.printStackTrace();
+            return new EconomyResponse(0, 0, EconomyResponse.ResponseType.FAILURE, e.getMessage());
         }
     }
 

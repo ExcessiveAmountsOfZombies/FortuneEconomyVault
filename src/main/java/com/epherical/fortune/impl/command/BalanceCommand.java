@@ -6,6 +6,7 @@ import com.epherical.fortune.impl.data.EconomyData;
 import com.epherical.fortune.impl.exception.EconomyException;
 import com.epherical.fortune.impl.object.EconomyUser;
 import net.kyori.adventure.text.Component;
+import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
@@ -33,8 +34,8 @@ public class BalanceCommand extends BaseCommand {
             }
             OfflinePlayer player = Bukkit.getServer().getOfflinePlayerIfCached(target);
             if (player != null) {
-                double balance = economy.userBalance(player.getUniqueId());
-                source.sendMessage(Component.text(player.getName() + " has: " + economy.formatCurrency(balance)));
+                double balance = economy.getBalance(player);
+                source.sendMessage(Component.text(player.getName() + " has: " + economy.format(balance)));
             }//todo: else send message saying they dont exist
 
 
@@ -51,7 +52,7 @@ public class BalanceCommand extends BaseCommand {
     private void addMoney(Player source, String target, double amount) {
         OfflinePlayer player = Bukkit.getServer().getOfflinePlayerIfCached(target);
         if (player != null) {
-            economy.depositUser(player.getUniqueId(), amount);
+            economy.depositPlayer(player, amount);
         }
 
     }
@@ -63,7 +64,7 @@ public class BalanceCommand extends BaseCommand {
     private void removeMoney(Player source, String target, double amount) {
         OfflinePlayer player = Bukkit.getServer().getOfflinePlayerIfCached(target);
         if (player != null) {
-            economy.withdrawUser(player.getUniqueId(), amount);
+            economy.withdrawPlayer(player, amount);
         }
     }
 
@@ -77,7 +78,7 @@ public class BalanceCommand extends BaseCommand {
             if (player != null) {
                 EconomyUser user = data.loadUser(player.getUniqueId());
                 user.zeroBalance();
-                economy.depositUser(user.uuid(), amount);
+                economy.depositPlayer(player, amount);
             }
         } catch (EconomyException e) {
             e.printStackTrace();

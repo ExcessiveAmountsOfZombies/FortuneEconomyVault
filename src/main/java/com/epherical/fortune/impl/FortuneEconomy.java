@@ -7,148 +7,168 @@ import net.milkbowl.vault.economy.Economy;
 import net.milkbowl.vault.economy.EconomyResponse;
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang.Validate;
+import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 
 import java.util.List;
-import java.util.UUID;
-import java.util.concurrent.Future;
 
 public class FortuneEconomy implements Economy {
 
-
-
-    private FortunePlugin plugin;
+    private final FortunePlugin plugin;
 
     public FortuneEconomy(FortunePlugin plugin) {
         this.plugin = plugin;
     }
 
 
-
-    @Override
-    public String currencyNameSingular() {
-        return "Dollar";
-    }
-
     @Override
     public boolean hasAccount(String player) {
-        return false;
+        return hasAccount(Bukkit.getServer().getOfflinePlayerIfCached(player));
     }
 
     @Override
     public boolean hasAccount(OfflinePlayer player) {
+        if (player != null) {
+            return plugin.economyData().userExists(player.getUniqueId());
+        }
         return false;
     }
 
     @Override
     public boolean hasAccount(String player, String world) {
-        return false;
+        return hasAccount(Bukkit.getServer().getOfflinePlayerIfCached(player), world);
     }
 
     @Override
     public boolean hasAccount(OfflinePlayer player, String world) {
-        return false;
+        return hasAccount(player);
     }
 
     @Override
     public double getBalance(String player) {
-        return 0;
+        return getBalance(Bukkit.getServer().getOfflinePlayerIfCached(player));
     }
 
     @Override
     public double getBalance(OfflinePlayer player) {
+        if (player != null) {
+            plugin.economyData().getUser(player.getUniqueId());
+        }
         return 0;
     }
 
     @Override
     public double getBalance(String player, String world) {
-        return 0;
+        return getBalance(Bukkit.getOfflinePlayerIfCached(player));
     }
 
     @Override
     public double getBalance(OfflinePlayer player, String world) {
-        return 0;
+        return getBalance(player);
     }
 
     @Override
     public boolean has(String player, double amount) {
-        return false;
+        return has(Bukkit.getServer().getOfflinePlayerIfCached(player), amount);
     }
 
     @Override
     public boolean has(OfflinePlayer player, double amount) {
-        return false;
+        return player != null && plugin.economyData().getUser(player.getUniqueId()).currentBalance() > amount;
     }
 
     @Override
     public boolean has(String player, String world, double amount) {
-        return false;
+        return has(Bukkit.getOfflinePlayerIfCached(player), world, amount);
     }
 
     @Override
     public boolean has(OfflinePlayer player, String world, double amount) {
-        return false;
+        return has(player, amount);
     }
 
     @Override
     public EconomyResponse withdrawPlayer(String player, double amount) {
-        return null;
+        Validate.isTrue(amount >= 0, "Values are required to be positive, %.2f was given.", amount);
+        return withdrawPlayer(Bukkit.getOfflinePlayerIfCached(player), amount);
     }
 
     @Override
     public EconomyResponse withdrawPlayer(OfflinePlayer player, double amount) {
-        return null;
+        Validate.isTrue(amount >= 0, "Values are required to be positive, %.2f was given.", amount);
+        if (player != null) {
+            return plugin.economyData().userWithdraw(player.getUniqueId(), amount);
+        } else {
+            return new EconomyResponse(0, 0, EconomyResponse.ResponseType.FAILURE, "Player was null");
+        }
     }
 
     @Override
     public EconomyResponse withdrawPlayer(String player, String world, double amount) {
-        return null;
+        Validate.isTrue(amount >= 0, "Values are required to be positive, %.2f was given.", amount);
+        return withdrawPlayer(Bukkit.getOfflinePlayerIfCached(player), amount);
     }
 
     @Override
     public EconomyResponse withdrawPlayer(OfflinePlayer player, String world, double amount) {
-        return null;
+        Validate.isTrue(amount >= 0, "Values are required to be positive, %.2f was given.", amount);
+        return withdrawPlayer(player, amount);
     }
 
     @Override
     public EconomyResponse depositPlayer(String player, double amount) {
-        return null;
+        Validate.isTrue(amount >= 0, "Values are required to be positive, %.2f was given.", amount);
+        return depositPlayer(Bukkit.getOfflinePlayerIfCached(player), amount);
     }
 
     @Override
     public EconomyResponse depositPlayer(OfflinePlayer player, double amount) {
-        return null;
+        Validate.isTrue(amount >= 0, "Values are required to be positive, %.2f was given.", amount);
+        if (player != null) {
+            return plugin.economyData().userDeposit(player.getUniqueId(), amount);
+        } else {
+            return new EconomyResponse(0, 0, EconomyResponse.ResponseType.FAILURE, "Player was null");
+        }
     }
 
     @Override
     public EconomyResponse depositPlayer(String player, String world, double amount) {
-        return null;
+        Validate.isTrue(amount >= 0, "Values are required to be positive, %.2f was given.", amount);
+        return depositPlayer(Bukkit.getOfflinePlayerIfCached(player), amount);
     }
 
     @Override
     public EconomyResponse depositPlayer(OfflinePlayer player, String world, double amount) {
-        return null;
+        Validate.isTrue(amount >= 0, "Values are required to be positive, %.2f was given.", amount);
+        return depositPlayer(player, amount);
     }
 
 
     @Override
     public boolean createPlayerAccount(String player) {
-        return false;
+        return createPlayerAccount(Bukkit.getOfflinePlayerIfCached(player));
     }
 
     @Override
     public boolean createPlayerAccount(OfflinePlayer player) {
+        try {
+            if (player != null) {
+                return plugin.economyData().saveUser(new EconomyUser(player.getUniqueId(), player.getName(), 0));
+            }
+        } catch (EconomyException e) {
+            e.printStackTrace();
+        }
         return false;
     }
 
     @Override
     public boolean createPlayerAccount(String player, String world) {
-        return false;
+        return createPlayerAccount(Bukkit.getOfflinePlayerIfCached(player));
     }
 
     @Override
     public boolean createPlayerAccount(OfflinePlayer player, String world) {
-        return false;
+        return createPlayerAccount(player);
     }
 
     @Override
@@ -174,71 +194,11 @@ public class FortuneEconomy implements Economy {
     @Override
     public String currencyNamePlural() {
         return "Dollars";
-
     }
 
     @Override
-    public String formatCurrency(double amount) {
-        return String.format("$%.2f", amount);
-    }
-
-    @Override
-    public boolean hasAccount(UUID userID) {
-        return plugin.economyData().userExists(userID);
-    }
-
-    @Override
-    public boolean hasAmount(UUID userID, double amount) {
-        try {
-            return plugin.economyData().loadUser(userID).balance() > amount;
-        } catch (EconomyException e) {
-            e.printStackTrace();
-        }
-        return false;
-    }
-
-    @Override
-    public Future<Boolean> createAccount(UUID userID, String name) {
-        try {
-            return plugin.economyData().saveUser(new EconomyUser(userID, name, 0));
-        } catch (EconomyException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
-    @Override
-    public double userBalance(UUID userID) {
-        try {
-            return plugin.economyData().loadUser(userID).balance();
-        } catch (EconomyException e) {
-            e.printStackTrace();
-        }
-        return 0.0d;
-    }
-
-    @Override
-    public EconomyQuery withdrawUser(UUID uuid, double amount) {
-        Validate.isTrue(amount >= 0, "Values are required to be positive, %.2f was given.", amount);
-        try {
-            EconomyUser user = plugin.economyData().loadUser(uuid);
-            return plugin.economyData().userWithdraw(user, amount);
-        } catch (EconomyException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
-    @Override
-    public EconomyQuery depositUser(UUID uuid, double amount) {
-        Validate.isTrue(amount >= 0, "Values are required to be positive, %.2f was given.", amount);
-        try {
-            EconomyUser user = plugin.economyData().loadUser(uuid);
-            return plugin.economyData().userDeposit(user, amount);
-        } catch (EconomyException e) {
-            e.printStackTrace();
-        }
-        return null;
+    public String currencyNameSingular() {
+        return "Dollar";
     }
 
     @Override

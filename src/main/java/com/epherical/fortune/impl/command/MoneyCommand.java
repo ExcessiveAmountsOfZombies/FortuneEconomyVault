@@ -5,6 +5,7 @@ import co.aikar.commands.annotation.*;
 import com.epherical.fortune.impl.data.EconomyData;
 import com.epherical.fortune.impl.object.EconomyUser;
 import net.kyori.adventure.text.Component;
+import net.milkbowl.vault.economy.Economy;
 import org.bukkit.command.CommandSender;
 
 import java.util.Comparator;
@@ -42,7 +43,7 @@ public class MoneyCommand extends BaseCommand {
             users.sort(Comparator.comparingDouble(EconomyUser::currentBalance).reversed());
             int counter = 1;
             for (EconomyUser user : users) {
-                source.sendMessage(Component.text(counter + ". " + user.name() + " " + economy.formatCurrency(user.currentBalance())));
+                source.sendMessage(Component.text(counter + ". " + user.name() + " " + economy.format(user.currentBalance())));
                 counter++;
             }
         } catch (Exception e) {
