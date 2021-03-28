@@ -1,0 +1,39 @@
+plugins {
+    id 'com.github.johnrengelman.shadow' version '5.2.0'
+    id 'java'
+    id 'maven'
+}
+
+group 'com.epherical'
+version '1.0.0'
+
+sourceCompatibility = '1.8'
+targetCompatibility = '1.8'
+
+repositories {
+    mavenLocal()
+    mavenCentral()
+
+    maven {
+        url = 'https://repo.aikar.co/content/groups/aikar/'
+    }
+
+    maven {
+        url = 'https://jitpack.io'
+    }
+
+    maven {
+        url = 'https://repo.destroystokyo.com/repository/maven-public'
+    }
+}
+
+dependencies {
+    compileOnly "com.destroystokyo.paper:paper-api:1.16.5-R0.1-SNAPSHOT"
+    compileOnly "com.github.MilkBowl:VaultAPI:1.7"
+    compile 'co.aikar:acf-paper:0.5.0-SNAPSHOT'
+}
+
+shadowJar {
+    relocate 'co.aikar.commands', 'com.epherical.commands.acf'
+    relocate 'co.aikar.locales', 'com.epherical.locales'
+}
