@@ -1,16 +1,21 @@
 package com.epherical.fortune.impl.object;
 
+import com.epherical.fortune.impl.data.EconomyData;
+import com.epherical.fortune.impl.exception.EconomyException;
 import com.google.common.collect.Lists;
 import org.apache.commons.lang.Validate;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.ScheduledFuture;
 
 public class EconomyUser {
     private final UUID uuid;
     private final String name;
-    private final double balance;
+    private double balance;
     private final List<Transaction> transactions;
+
+    private ScheduledFuture<?> future;
 
     public EconomyUser(UUID uuid, String name, double balance) {
         this.uuid = uuid;
@@ -49,6 +54,31 @@ public class EconomyUser {
         transactions.add(transaction);
     }
 
+    public void applyFuture(ScheduledFuture<?> future) {
+        this.future = future;
+    }
+
+    public void cancelFuture() {
+        this.future.cancel(false);
+        this.future = null;
+    }
+
+    public Runnable scheduleSave(EconomyData data) {
+        return () -> {
+            try {
+                if (transactions.size() == 0) {
+                    return;
+                }
+                data.saveUser(this);
+                this.balance = currentBalance();
+                transactions.clear();
+                System.out.println("Transactions cleared for: " + this.name);
+            } catch (EconomyException e) {
+                e.printStackTrace();
+            }
+        };
+    }
+
     public void add(double amount) {
         Validate.isTrue(amount >= 0, "Values are required to be positive, %.2f was given.", amount);
         transactions.add(new Transaction(amount, Transaction.Type.ADD));
@@ -59,5 +89,21 @@ public class EconomyUser {
         transactions.add(new Transaction(amount, Transaction.Type.SUBTRACT));
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
 
+        EconomyUser that = (EconomyUser) o;
+
+        if (!uuid.equals(that.uuid)) return false;
+        return name.equals(that.name);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = uuid.hashCode();
+        result = 31 * result + name.hashCode();
+        return result;
+    }
 }

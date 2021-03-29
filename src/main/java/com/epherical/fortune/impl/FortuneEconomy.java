@@ -52,7 +52,7 @@ public class FortuneEconomy implements Economy {
     @Override
     public double getBalance(OfflinePlayer player) {
         if (player != null) {
-            plugin.economyData().getUser(player.getUniqueId());
+            return plugin.economyData().getUser(player.getUniqueId()).currentBalance();
         }
         return 0;
     }

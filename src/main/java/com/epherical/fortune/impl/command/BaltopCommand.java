@@ -12,12 +12,12 @@ import java.util.Comparator;
 import java.util.List;
 
 
-public class MoneyCommand extends BaseCommand {
+public class BaltopCommand extends BaseCommand {
 
     private Economy economy;
     private EconomyData data;
 
-    public MoneyCommand(Economy economy, EconomyData data) {
+    public BaltopCommand(Economy economy, EconomyData data) {
         this.economy = economy;
         this.data = data;
     }

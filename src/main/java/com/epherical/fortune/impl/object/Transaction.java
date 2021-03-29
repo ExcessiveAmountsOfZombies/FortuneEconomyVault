@@ -20,7 +20,6 @@ public class Transaction {
         return type;
     }
 
-
     public double applyTransactionModifier() {
         return type.modifier.apply(amount);
     }

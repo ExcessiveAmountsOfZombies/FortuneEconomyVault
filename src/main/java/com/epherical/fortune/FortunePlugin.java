@@ -4,7 +4,7 @@ package com.epherical.fortune;
 import co.aikar.commands.PaperCommandManager;
 import com.epherical.fortune.impl.FortuneEconomy;
 import com.epherical.fortune.impl.command.BalanceCommand;
-import com.epherical.fortune.impl.command.MoneyCommand;
+import com.epherical.fortune.impl.command.BaltopCommand;
 import com.epherical.fortune.impl.data.EconomyData;
 import com.epherical.fortune.impl.data.EconomyDataFlatFile;
 import com.epherical.fortune.impl.listener.PlayerListener;
@@ -25,16 +25,16 @@ public class FortunePlugin extends JavaPlugin {
         this.economy = new FortuneEconomy(this);
         this.manager = new PaperCommandManager(this);
 
-        this.manager.registerCommand(new MoneyCommand(economy, economyData));
+        this.manager.registerCommand(new BaltopCommand(economy, economyData));
         this.manager.registerCommand(new BalanceCommand(economy, economyData));
 
-        getServer().getServicesManager().register(Economy.class, economy, this, ServicePriority.High);
+        getServer().getServicesManager().register(Economy.class, economy, this, ServicePriority.Highest);
         getServer().getPluginManager().registerEvents(new PlayerListener(this), this);
     }
 
     @Override
     public void onDisable() {
-
+        economyData.close();
     }
 
     public FortuneEconomy economy() {
