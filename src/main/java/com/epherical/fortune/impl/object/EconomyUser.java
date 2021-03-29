@@ -12,16 +12,20 @@ import java.util.concurrent.ScheduledFuture;
 public class EconomyUser {
     private final UUID uuid;
     private final String name;
-    private double balance;
+    private final double balance;
     private final List<Transaction> transactions;
+    private EconomyUser refreshedUser = null;
 
     private ScheduledFuture<?> future;
+
+    public static int counter = 0;
 
     public EconomyUser(UUID uuid, String name, double balance) {
         this.uuid = uuid;
         this.name = name;
         this.balance = balance;
         this.transactions = Lists.newArrayList();
+        counter++;
     }
 
     public EconomyUser(EconomyUser user, double delta) {
@@ -38,6 +42,10 @@ public class EconomyUser {
 
     public double currentBalance() {
         double curBalance = balance;
+        if (refreshedUser != null) {
+            curBalance = refreshedUser.balance;
+        }
+
         for (Transaction transaction : transactions) {
             curBalance += transaction.applyTransactionModifier();
         }
@@ -58,19 +66,25 @@ public class EconomyUser {
         this.future = future;
     }
 
+    public void addRefreshedUser(EconomyUser user) {
+        this.refreshedUser = user;
+    }
+
     public void cancelFuture() {
-        this.future.cancel(false);
-        this.future = null;
+        if (this.future != null) {
+            this.future.cancel(false);
+            this.future = null;
+        }
     }
 
     public Runnable scheduleSave(EconomyData data) {
         return () -> {
             try {
+                System.out.println("Where we at: " + Thread.currentThread().toString() + " " + transactions.size() + " " + this.name + " " + this.hashCode() + " aC " + counter);
                 if (transactions.size() == 0) {
                     return;
                 }
                 data.saveUser(this);
-                this.balance = currentBalance();
                 transactions.clear();
                 System.out.println("Transactions cleared for: " + this.name);
             } catch (EconomyException e) {

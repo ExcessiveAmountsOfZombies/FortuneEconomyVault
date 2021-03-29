@@ -23,8 +23,9 @@ public class EconomyDataFlatFile extends EconomyData {
 
     private final Gson gson;
 
-    public EconomyDataFlatFile(Path dataFolder, String pluginName) {
-        this.userFolder = dataFolder.resolve(pluginName + File.separator + "balances");
+    public EconomyDataFlatFile(Path dataFolder) {
+        super();
+        this.userFolder = dataFolder.resolve("balances");
         this.gson = new GsonBuilder()
                 .setPrettyPrinting()
                 .registerTypeAdapter(EconomyUser.class, new EconomyUserSerializer())
@@ -52,6 +53,7 @@ public class EconomyDataFlatFile extends EconomyData {
     @Override
     public boolean saveUser(EconomyUser user) throws EconomyException {
         File file = new File(userFolder.resolve(user.uuid().toString()).toFile() + ".json");
+        EconomyUser freshUser = null;
         if (!file.exists()) {
             try {
                 file.getParentFile().mkdirs();
@@ -59,15 +61,19 @@ public class EconomyDataFlatFile extends EconomyData {
             } catch (IOException e) {
                 e.printStackTrace();
             }
+        } else {
+            freshUser = loadUser(user.uuid());
         }
         try (FileWriter writer = new FileWriter(file)) {
+            user.addRefreshedUser(freshUser);
             writer.write(gson.toJson(user, EconomyUser.class));
             user.cancelFuture();
             cache.invalidate(user.uuid());
-            return true;
         } catch (IOException e) {
             throw new EconomyException("Could not save user " + user.name() + " " + user.uuid());
         }
+        // the balance needs to be immutable, so we don't diverge between servers.
+        return getUser(user.uuid()) != null;
     }
 
     @Override

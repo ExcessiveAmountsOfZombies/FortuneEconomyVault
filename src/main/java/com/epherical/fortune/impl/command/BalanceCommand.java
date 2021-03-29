@@ -77,7 +77,8 @@ public class BalanceCommand extends BaseCommand {
             OfflinePlayer player = Bukkit.getServer().getOfflinePlayerIfCached(target);
             if (player != null) {
                 EconomyUser user = data.loadUser(player.getUniqueId());
-                user.zeroBalance();
+
+                economy.withdrawPlayer(player, user.currentBalance());
                 economy.depositPlayer(player, amount);
             }
         } catch (EconomyException e) {

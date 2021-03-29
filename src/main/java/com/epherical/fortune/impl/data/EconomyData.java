@@ -16,12 +16,22 @@ public abstract class EconomyData {
     ScheduledExecutorService saveSchedule = Executors.newSingleThreadScheduledExecutor();
 
     LoadingCache<UUID, EconomyUser> cache = CacheBuilder.newBuilder()
+            .expireAfterAccess(20, TimeUnit.SECONDS)
+            .expireAfterWrite(20, TimeUnit.SECONDS)
+            .removalListener(notification -> {
+                EconomyUser user = (EconomyUser) notification.getValue();
+                user.cancelFuture();
+            })
             .build(new CacheLoader<UUID, EconomyUser>() {
         @Override
         public EconomyUser load(UUID uuid) throws Exception {
             return loadUser(uuid);
         }
     });
+
+    public EconomyData() {
+        saveSchedule.scheduleAtFixedRate(() -> cache.cleanUp(), 1L, 1L, TimeUnit.MINUTES);
+    }
 
     public void close() {
         saveSchedule.shutdown();
@@ -42,7 +52,7 @@ public abstract class EconomyData {
     private Callable<EconomyUser> callUser(UUID uuid) {
         return () -> {
             EconomyUser user = loadUser(uuid);
-            user.applyFuture(saveSchedule.scheduleAtFixedRate(user.scheduleSave(EconomyData.this), 10L, 10L, TimeUnit.SECONDS));
+            user.applyFuture(saveSchedule.scheduleAtFixedRate(user.scheduleSave(EconomyData.this), 1L, 1L, TimeUnit.SECONDS));
             return user;
         };
     }
