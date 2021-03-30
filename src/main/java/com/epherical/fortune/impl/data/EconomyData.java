@@ -39,7 +39,7 @@ public abstract class EconomyData {
 
     public abstract EconomyUser loadUser(UUID uuid) throws EconomyException;
 
-    public abstract boolean userExists(UUID uuid);
+    public abstract boolean userExists(UUID uuid) throws EconomyException;
 
     public abstract boolean saveUser(EconomyUser user) throws EconomyException;
 

@@ -18,14 +18,11 @@ public class EconomyUser {
 
     private ScheduledFuture<?> future;
 
-    public static int counter = 0;
-
     public EconomyUser(UUID uuid, String name, double balance) {
         this.uuid = uuid;
         this.name = name;
         this.balance = balance;
         this.transactions = Lists.newArrayList();
-        counter++;
     }
 
     public EconomyUser(EconomyUser user, double delta) {
@@ -46,11 +43,17 @@ public class EconomyUser {
             curBalance = refreshedUser.balance;
         }
 
-        for (Transaction transaction : transactions) {
-            curBalance += transaction.applyTransactionModifier();
-        }
+        curBalance += transactionBalance();
 
         return curBalance;
+    }
+
+    public double transactionBalance() {
+        double sum = 0.0d;
+        for (Transaction transaction : transactions) {
+            sum += transaction.applyTransactionModifier();
+        }
+        return sum;
     }
 
     public void zeroBalance() {
@@ -80,12 +83,12 @@ public class EconomyUser {
     public Runnable scheduleSave(EconomyData data) {
         return () -> {
             try {
-                System.out.println("Where we at: " + Thread.currentThread().toString() + " " + transactions.size() + " " + this.name + " " + this.hashCode() + " aC " + counter);
                 if (transactions.size() == 0) {
                     return;
                 }
                 data.saveUser(this);
                 transactions.clear();
+                // todo: logger
                 System.out.println("Transactions cleared for: " + this.name);
             } catch (EconomyException e) {
                 e.printStackTrace();

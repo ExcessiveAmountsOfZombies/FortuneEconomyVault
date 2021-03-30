@@ -29,7 +29,11 @@ public class FortuneEconomy implements Economy {
     @Override
     public boolean hasAccount(OfflinePlayer player) {
         if (player != null) {
-            return plugin.economyData().userExists(player.getUniqueId());
+            try {
+                return plugin.economyData().userExists(player.getUniqueId());
+            } catch (EconomyException e) {
+                e.printStackTrace();
+            }
         }
         return false;
     }

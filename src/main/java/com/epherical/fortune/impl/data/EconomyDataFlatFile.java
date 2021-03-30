@@ -62,6 +62,7 @@ public class EconomyDataFlatFile extends EconomyData {
                 e.printStackTrace();
             }
         } else {
+            // we re-grab the user to make sure we are only applying the transactions from the user and not changes in their balance.
             freshUser = loadUser(user.uuid());
         }
         try (FileWriter writer = new FileWriter(file)) {
