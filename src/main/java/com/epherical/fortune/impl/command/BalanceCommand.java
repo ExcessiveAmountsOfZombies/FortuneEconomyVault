@@ -5,11 +5,18 @@ import co.aikar.commands.annotation.*;
 import com.epherical.fortune.impl.data.EconomyData;
 import com.epherical.fortune.impl.exception.EconomyException;
 import com.epherical.fortune.impl.object.EconomyUser;
+import net.kyori.adventure.audience.MessageType;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.ComponentLike;
+import net.kyori.adventure.text.TranslatableComponent;
+import net.kyori.adventure.text.format.Style;
+import net.kyori.adventure.text.format.TextColor;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
+
+import java.util.Locale;
 
 @CommandAlias("bal|money|balance")
 public class BalanceCommand extends BaseCommand {
@@ -35,8 +42,18 @@ public class BalanceCommand extends BaseCommand {
             OfflinePlayer player = Bukkit.getServer().getOfflinePlayerIfCached(target);
             if (player != null) {
                 double balance = economy.getBalance(player);
-                source.sendMessage(Component.text(player.getName() + " has: " + economy.format(balance)));
-            }//todo: else send message saying they dont exist
+
+                Component msg = Component.text(player.getName())
+                        .append(Component.text(" has: ").style(Style.style(TextColor.fromHexString("#8f8f8f"))))
+                        .append(Component.text(economy.format(balance)).style(Style.style(TextColor.fromHexString("#3d9e00"))));
+
+                source.sendMessage(msg, MessageType.SYSTEM);
+            } else {
+                Component msg = Component.text("That player could not be found!")
+                        .style(Style.style(TextColor.fromHexString("#940000")));
+
+                source.sendMessage(msg, MessageType.SYSTEM);
+            }
 
 
         } catch (IllegalArgumentException e) {
@@ -53,6 +70,14 @@ public class BalanceCommand extends BaseCommand {
         OfflinePlayer player = Bukkit.getServer().getOfflinePlayerIfCached(target);
         if (player != null) {
             economy.depositPlayer(player, amount);
+
+            String amt = amount > 1 ? economy.currencyNamePlural() : economy.currencyNameSingular();
+
+            Component msg = Component.text("Deposited: ").style(Style.style(TextColor.fromHexString("#8f8f8f")))
+                    .append(Component.text(economy.format(amount)).style(Style.style(TextColor.fromHexString("#3d9e00"))))
+                    .append(Component.text(" " + amt.toLowerCase(Locale.ROOT)).style(Style.style(TextColor.fromHexString("#8f8f8f"))));
+
+            source.sendMessage(msg, MessageType.SYSTEM);
         }
 
     }
@@ -65,6 +90,14 @@ public class BalanceCommand extends BaseCommand {
         OfflinePlayer player = Bukkit.getServer().getOfflinePlayerIfCached(target);
         if (player != null) {
             economy.withdrawPlayer(player, amount);
+
+            String amt = amount > 1 ? economy.currencyNamePlural() : economy.currencyNameSingular();
+
+            Component msg = Component.text("Removed: ").style(Style.style(TextColor.fromHexString("#8f8f8f")))
+                    .append(Component.text(economy.format(amount)).style(Style.style(TextColor.fromHexString("#3d9e00"))))
+                    .append(Component.text(" " + amt.toLowerCase(Locale.ROOT)).style(Style.style(TextColor.fromHexString("#8f8f8f"))));
+
+            source.sendMessage(msg, MessageType.SYSTEM);
         }
     }
 
@@ -80,6 +113,14 @@ public class BalanceCommand extends BaseCommand {
 
                 economy.withdrawPlayer(player, user.currentBalance());
                 economy.depositPlayer(player, amount);
+
+                String amt = amount > 1 ? economy.currencyNamePlural() : economy.currencyNameSingular();
+
+                Component msg = Component.text("Set money to: ").style(Style.style(TextColor.fromHexString("#8f8f8f")))
+                        .append(Component.text(economy.format(amount)).style(Style.style(TextColor.fromHexString("#3d9e00"))))
+                        .append(Component.text(" " + amt.toLowerCase(Locale.ROOT)).style(Style.style(TextColor.fromHexString("#8f8f8f"))));
+
+                source.sendMessage(msg, MessageType.SYSTEM);
             }
         } catch (EconomyException e) {
             e.printStackTrace();
