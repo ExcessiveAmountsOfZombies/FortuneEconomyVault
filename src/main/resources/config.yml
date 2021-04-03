@@ -1,0 +1,13 @@
+# MYSQL, JSON
+# Only two options, defaults to JSON.
+storage-type: "JSON"
+# a relative data path for flat file storage of json files. This can be used if you wanted to have a global balance system
+# using json for multiple servers. Not recommended. ex: "../../../data".
+data-path: ""
+## if you're using MYSQL make sure to fill this out.
+mysql:
+  host-ip: ""
+  username: ""
+  password: ""
+  dbname: ""
+  port:

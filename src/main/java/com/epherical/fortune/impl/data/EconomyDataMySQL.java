@@ -1,5 +1,6 @@
 package com.epherical.fortune.impl.data;
 
+import com.epherical.fortune.impl.config.FortuneConfig;
 import com.epherical.fortune.impl.exception.EconomyException;
 import com.epherical.fortune.impl.object.EconomyUser;
 import com.google.common.collect.Lists;
@@ -22,13 +23,13 @@ public class EconomyDataMySQL extends EconomyData {
     private final String dbName;
     private final int port;
 
-    public EconomyDataMySQL(String hostIP, String username, String password, String dbName, int port) {
+    public EconomyDataMySQL(FortuneConfig config) {
         super();
-        this.hostIP = hostIP;
-        this.username = username;
-        this.password = password;
-        this.dbName = dbName;
-        this.port = port;
+        this.hostIP = config.hostIP();
+        this.username = config.username();
+        this.password = config.password();
+        this.dbName = config.databaseName();
+        this.port = config.port();
         try {
             Class.forName("com.mysql.jdbc.Driver");
             connection = openConnection(this.hostIP, this.username, this.password, this.dbName, this.port);
