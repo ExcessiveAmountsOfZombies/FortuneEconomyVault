@@ -85,7 +85,7 @@ public class EconomyDataMySQL extends EconomyData {
             if (!closed) {
                 try {
                     valid = connection.isValid(2);
-                } catch (SQLException e) {
+                } catch (SQLException ignored) {
                 }
             }
         }

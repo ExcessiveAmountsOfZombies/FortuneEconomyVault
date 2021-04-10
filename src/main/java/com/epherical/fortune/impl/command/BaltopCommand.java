@@ -40,7 +40,7 @@ public class BaltopCommand extends BaseCommand {
     @CommandAlias("baltop|moneytop|balancetop")
     @Description("See who has the most money on the server.")
     @CommandCompletion("1")
-    //@CommandPermission("fconomy.command.baltop")
+    @CommandPermission("fconomy.command.baltop")
     private void baltop(CommandSender source, String[] args) {
         try {
             int page = 1;
@@ -58,12 +58,12 @@ public class BaltopCommand extends BaseCommand {
             int counter = page == 1 ? 1 : ((page -1) * 10) + 1;
 
             // -=- Page 1/1 -=- Top Balances -=-=-
-            Component msg = Component.translatable("fortune.command.baltop.begin1").style(Style.style(TextColor.fromHexString("#8f8f8f")))
-                    .append(Component.translatable("fortune.command.baltop.pages").style(Style.style(TextColor.fromHexString("#8f8f8f"))))
+            Component msg = Component.text("-=- ").style(Style.style(TextColor.fromHexString("#8f8f8f")))
+                    .append(Component.text("Page ").style(Style.style(TextColor.fromHexString("#8f8f8f"))))
                     .append(Component.text(page).style(Style.style(TextColor.fromHexString("#545454"))))
                     .append(Component.text("/").style(Style.style(TextColor.fromHexString("#8f8f8f"))))
                     .append(Component.text(maxPage).style(Style.style(TextColor.fromHexString("#545454"))))
-                    .append(Component.translatable("fortune.command.baltop.balances").style(Style.style(TextColor.fromHexString("#8f8f8f"))));
+                    .append(Component.text(" -=- Top Balances -=-=-").style(Style.style(TextColor.fromHexString("#8f8f8f"))));
 
             source.sendMessage(msg, MessageType.SYSTEM);
             int begin = page == 1 ? 0 : Math.min(users.size(), ((page -1) * 10));

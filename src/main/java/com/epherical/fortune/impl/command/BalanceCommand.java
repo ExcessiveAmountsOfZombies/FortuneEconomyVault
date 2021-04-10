@@ -7,8 +7,6 @@ import com.epherical.fortune.impl.exception.EconomyException;
 import com.epherical.fortune.impl.object.EconomyUser;
 import net.kyori.adventure.audience.MessageType;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.ComponentLike;
-import net.kyori.adventure.text.TranslatableComponent;
 import net.kyori.adventure.text.format.Style;
 import net.kyori.adventure.text.format.TextColor;
 import net.milkbowl.vault.economy.Economy;
@@ -31,7 +29,7 @@ public class BalanceCommand extends BaseCommand {
 
     @Default
     @Description("Check your or another players balance.")
-    //@CommandPermission("fconomy.command.balance.check")
+    @CommandPermission("fconomy.command.balance.check")
     @CommandCompletion("@players")
     @Syntax("<player>")
     private void checkBalance(Player source, @Optional String target) {
@@ -63,7 +61,7 @@ public class BalanceCommand extends BaseCommand {
 
     @Subcommand("add")
     @Description("Add money to a player's account.")
-    //@CommandPermission("fconomy.command.balance.add")
+    @CommandPermission("fconomy.command.balance.add")
     @CommandCompletion("@players 1")
     @Syntax("<player> <amount>")
     private void addMoney(Player source, String target, double amount) {
@@ -84,7 +82,7 @@ public class BalanceCommand extends BaseCommand {
 
     @Subcommand("remove")
     @Description("remove money to a player's account.")
-    //@CommandPermission("fconomy.command.balance.remove")
+    @CommandPermission("fconomy.command.balance.remove")
     @CommandCompletion("@players 1")
     private void removeMoney(Player source, String target, double amount) {
         OfflinePlayer player = Bukkit.getServer().getOfflinePlayerIfCached(target);
@@ -103,7 +101,7 @@ public class BalanceCommand extends BaseCommand {
 
     @Subcommand("set")
     @Description("sets the money on a player's account.")
-    //@CommandPermission("fconomy.command.balance.set")
+    @CommandPermission("fconomy.command.balance.set")
     @CommandCompletion("@players 1")
     private void setMoney(Player source, String target, double amount) {
         try {

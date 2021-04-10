@@ -9,7 +9,6 @@ import com.epherical.fortune.impl.config.FortuneConfig;
 import com.epherical.fortune.impl.data.EconomyData;
 import com.epherical.fortune.impl.data.EconomyDataFlatFile;
 import com.epherical.fortune.impl.data.EconomyDataMySQL;
-import com.epherical.fortune.impl.listener.ChestshopListener;
 import com.epherical.fortune.impl.listener.PlayerListener;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.plugin.ServicePriority;
@@ -44,7 +43,6 @@ public class FortunePlugin extends JavaPlugin {
 
         getServer().getServicesManager().register(Economy.class, economy, this, ServicePriority.Highest);
         getServer().getPluginManager().registerEvents(new PlayerListener(this), this);
-        getServer().getPluginManager().registerEvents(new ChestshopListener(), this);
     }
 
     @Override

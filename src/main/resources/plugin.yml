@@ -1,7 +1,7 @@
-name: FortuneEconomy
+name: FortuneEconomyVault
 main: com.epherical.fortune.FortunePlugin
 version: 1.0.0
 author: Thonk
-description: Async Economy Implementation
+description: Database/Flatfile economy implementation for single/proxy based servers.
 api-version: "1.16"
 depend: [Vault]
