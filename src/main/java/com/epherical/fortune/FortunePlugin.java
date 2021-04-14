@@ -1,7 +1,7 @@
 package com.epherical.fortune;
 
 
-import co.aikar.commands.PaperCommandManager;
+import co.aikar.commands.BukkitCommandManager;
 import com.epherical.fortune.impl.FortuneEconomy;
 import com.epherical.fortune.impl.command.BalanceCommand;
 import com.epherical.fortune.impl.command.BaltopCommand;
@@ -19,10 +19,10 @@ public class FortunePlugin extends JavaPlugin {
 
     private EconomyData economyData;
     private FortuneEconomy economy;
-    private PaperCommandManager manager;
+    private BukkitCommandManager manager;
     private FortuneConfig config;
 
-    // APi ideas transaction logging, be able to determine who gained/lost what.
+    public static boolean usingPaper;
 
     @Override
     public void onEnable() {
@@ -36,13 +36,20 @@ public class FortunePlugin extends JavaPlugin {
         }
 
         this.economy = new FortuneEconomy(this);
-        this.manager = new PaperCommandManager(this);
+        this.manager = new BukkitCommandManager(this);
 
         this.manager.registerCommand(new BaltopCommand(economy, economyData));
         this.manager.registerCommand(new BalanceCommand(economy, economyData));
 
         getServer().getServicesManager().register(Economy.class, economy, this, ServicePriority.Highest);
         getServer().getPluginManager().registerEvents(new PlayerListener(this), this);
+        try {
+            Class.forName("net.kyori.adventure.text.Component");
+            usingPaper = true;
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+            usingPaper = false;
+        }
     }
 
     @Override

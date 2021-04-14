@@ -2,12 +2,14 @@ package com.epherical.fortune.impl.command;
 
 import co.aikar.commands.BaseCommand;
 import co.aikar.commands.annotation.*;
+import com.epherical.fortune.FortunePlugin;
 import com.epherical.fortune.impl.data.EconomyData;
 import com.epherical.fortune.impl.object.EconomyUser;
 import net.kyori.adventure.audience.MessageType;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.Style;
 import net.kyori.adventure.text.format.TextColor;
+import net.md_5.bungee.api.ChatColor;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.command.CommandSender;
 
@@ -17,8 +19,8 @@ import java.util.List;
 
 public class BaltopCommand extends BaseCommand {
 
-    private Economy economy;
-    private EconomyData data;
+    private final Economy economy;
+    private final EconomyData data;
 
     public BaltopCommand(Economy economy, EconomyData data) {
         this.economy = economy;
@@ -58,26 +60,38 @@ public class BaltopCommand extends BaseCommand {
             int counter = page == 1 ? 1 : ((page -1) * 10) + 1;
 
             // -=- Page 1/1 -=- Top Balances -=-=-
-            Component msg = Component.text("-=- ").style(Style.style(TextColor.fromHexString("#8f8f8f")))
-                    .append(Component.text("Page ").style(Style.style(TextColor.fromHexString("#8f8f8f"))))
-                    .append(Component.text(page).style(Style.style(TextColor.fromHexString("#545454"))))
-                    .append(Component.text("/").style(Style.style(TextColor.fromHexString("#8f8f8f"))))
-                    .append(Component.text(maxPage).style(Style.style(TextColor.fromHexString("#545454"))))
-                    .append(Component.text(" -=- Top Balances -=-=-").style(Style.style(TextColor.fromHexString("#8f8f8f"))));
+            if (FortunePlugin.usingPaper) {
+                Component msg = Component.text("-=- ").style(Style.style(TextColor.fromHexString("#8f8f8f")))
+                        .append(Component.text("Page ").style(Style.style(TextColor.fromHexString("#8f8f8f"))))
+                        .append(Component.text(page).style(Style.style(TextColor.fromHexString("#545454"))))
+                        .append(Component.text("/").style(Style.style(TextColor.fromHexString("#8f8f8f"))))
+                        .append(Component.text(maxPage).style(Style.style(TextColor.fromHexString("#545454"))))
+                        .append(Component.text(" -=- Top Balances -=-=-").style(Style.style(TextColor.fromHexString("#8f8f8f"))));
+                source.sendMessage(msg, MessageType.SYSTEM);
+            } else {
+                String message = ChatColor.of("#8f8f8f") + "-=- ";
+                message += ChatColor.of("#8f8f8f") + "Page ";
+                message += ChatColor.of("#545454") + "" + page;
+                message += ChatColor.of("#8f8f8f") + "/";
+                message += ChatColor.of("#545454") + "" + maxPage;
+                message += ChatColor.of("#8f8f8f") + " -=- Top Balances -=-=-";
+                source.sendMessage(message);
+            }
 
-            source.sendMessage(msg, MessageType.SYSTEM);
             int begin = page == 1 ? 0 : Math.min(users.size(), ((page -1) * 10));
-            int end = page == 1 ? 10 : Math.min(users.size(), (page * 10));
+            int end = page == 1 ? Math.min(users.size(), 10) : Math.min(users.size(), (page * 10));
 
             for (EconomyUser user : users.subList(begin, end)) {
                 String money = economy.format(user.currentBalance());
-
-                Component row = Component.text(counter + ". ")
-                        .append(Component.text(user.name() + " ").style(Style.style())
-                        .append(Component.text(money).style(Style.style(TextColor.fromHexString("#3d9e00")))));
-
-
-                source.sendMessage(row, MessageType.SYSTEM);
+                if (FortunePlugin.usingPaper) {
+                    Component row = Component.text(counter + ". ")
+                            .append(Component.text(user.name() + " ").style(Style.style())
+                                    .append(Component.text(money).style(Style.style(TextColor.fromHexString("#3d9e00")))));
+                    source.sendMessage(row, MessageType.SYSTEM);
+                } else {
+                    String message = counter + ". " + user.name() + " " + ChatColor.of("#3d9e00") + money;
+                    source.sendMessage(message);
+                }
                 counter++;
             }
         } catch (Exception e) {

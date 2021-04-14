@@ -39,13 +39,25 @@ public abstract class EconomyData {
 
     public abstract EconomyUser loadUser(UUID uuid) throws EconomyException;
 
+    public abstract EconomyUser loadUser(String name) throws EconomyException;
+
+    public abstract boolean userExists(String name) throws EconomyException;
+
     public abstract boolean userExists(UUID uuid) throws EconomyException;
 
     public abstract boolean saveUser(EconomyUser user) throws EconomyException;
 
     public abstract EconomyResponse userDeposit(UUID user, double amount);
 
+    public EconomyResponse userDeposit(String user, double amount) throws EconomyException {
+        return userDeposit(loadUser(user).uuid(), amount);
+    }
+
     public abstract EconomyResponse userWithdraw(UUID user, double amount);
+
+    public EconomyResponse userWithdraw(String user, double amount) throws EconomyException {
+        return userWithdraw(loadUser(user).uuid(), amount);
+    }
 
     public abstract List<EconomyUser> users();
 

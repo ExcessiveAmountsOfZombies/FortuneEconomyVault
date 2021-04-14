@@ -13,7 +13,9 @@ import net.milkbowl.vault.economy.EconomyResponse;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -22,6 +24,8 @@ public class EconomyDataFlatFile extends EconomyData {
     private final Path userFolder;
 
     private final Gson gson;
+
+    private Map<String, UUID> userCache = new HashMap<>();
 
     public EconomyDataFlatFile(Path dataFolder) {
         super();
@@ -38,11 +42,24 @@ public class EconomyDataFlatFile extends EconomyData {
         try {
             File file = new File(userFolder.resolve(uuid.toString()).toFile() + ".json");
             try (FileReader reader = new FileReader(file)) {
-                return gson.fromJson(reader, EconomyUser.class);
+                EconomyUser user = gson.fromJson(reader, EconomyUser.class);
+                userCache.putIfAbsent(user.name(), user.uuid());
+                return user;
             }
         } catch (IOException e) {
             throw new EconomyException("Could not load user with uuid " + uuid);
         }
+    }
+
+    @Override
+    public EconomyUser loadUser(String name) {
+        UUID value = userCache.getOrDefault(name, null);
+        return value != null ? getUser(value) : null;
+    }
+
+    @Override
+    public boolean userExists(String name) {
+        return userCache.containsKey(name);
     }
 
     @Override

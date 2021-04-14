@@ -23,7 +23,12 @@ public class FortuneEconomy implements Economy {
 
     @Override
     public boolean hasAccount(String player) {
-        return hasAccount(Bukkit.getServer().getOfflinePlayerIfCached(player));
+        try {
+            return plugin.economyData().userExists(player);
+        } catch (EconomyException e) {
+            e.printStackTrace();
+        }
+        return false;
     }
 
     @Override
@@ -40,7 +45,7 @@ public class FortuneEconomy implements Economy {
 
     @Override
     public boolean hasAccount(String player, String world) {
-        return hasAccount(Bukkit.getServer().getOfflinePlayerIfCached(player), world);
+        return hasAccount(player);
     }
 
     @Override
@@ -50,7 +55,12 @@ public class FortuneEconomy implements Economy {
 
     @Override
     public double getBalance(String player) {
-        return getBalance(Bukkit.getServer().getOfflinePlayerIfCached(player));
+        try {
+            return plugin.economyData().loadUser(player).currentBalance();
+        } catch (EconomyException e) {
+            e.printStackTrace();
+        }
+        return 0.0d;
     }
 
     @Override
@@ -63,7 +73,7 @@ public class FortuneEconomy implements Economy {
 
     @Override
     public double getBalance(String player, String world) {
-        return getBalance(Bukkit.getOfflinePlayerIfCached(player));
+        return getBalance(player);
     }
 
     @Override
@@ -73,7 +83,12 @@ public class FortuneEconomy implements Economy {
 
     @Override
     public boolean has(String player, double amount) {
-        return has(Bukkit.getServer().getOfflinePlayerIfCached(player), amount);
+        try {
+            return plugin.economyData().loadUser(player).currentBalance() > amount;
+        } catch (EconomyException e) {
+            e.printStackTrace();
+        }
+        return false;
     }
 
     @Override
@@ -83,7 +98,7 @@ public class FortuneEconomy implements Economy {
 
     @Override
     public boolean has(String player, String world, double amount) {
-        return has(Bukkit.getOfflinePlayerIfCached(player), world, amount);
+        return has(player, amount);
     }
 
     @Override
@@ -94,7 +109,11 @@ public class FortuneEconomy implements Economy {
     @Override
     public EconomyResponse withdrawPlayer(String player, double amount) {
         Validate.isTrue(amount >= 0, "Values are required to be positive, %.2f was given.", amount);
-        return withdrawPlayer(Bukkit.getOfflinePlayerIfCached(player), amount);
+        try {
+            return plugin.economyData().userWithdraw(player, amount);
+        } catch (EconomyException e) {
+            return new EconomyResponse(0, 0, EconomyResponse.ResponseType.FAILURE, "Player was null");
+        }
     }
 
     @Override
@@ -110,7 +129,7 @@ public class FortuneEconomy implements Economy {
     @Override
     public EconomyResponse withdrawPlayer(String player, String world, double amount) {
         Validate.isTrue(amount >= 0, "Values are required to be positive, %.2f was given.", amount);
-        return withdrawPlayer(Bukkit.getOfflinePlayerIfCached(player), amount);
+        return withdrawPlayer(player, amount);
     }
 
     @Override
@@ -122,7 +141,12 @@ public class FortuneEconomy implements Economy {
     @Override
     public EconomyResponse depositPlayer(String player, double amount) {
         Validate.isTrue(amount >= 0, "Values are required to be positive, %.2f was given.", amount);
-        return depositPlayer(Bukkit.getOfflinePlayerIfCached(player), amount);
+        try {
+            return plugin.economyData().userDeposit(player, amount);
+        } catch (EconomyException e) {
+            e.printStackTrace();
+        }
+        return new EconomyResponse(0, 0, EconomyResponse.ResponseType.FAILURE, "Player was null");
     }
 
     @Override
@@ -138,7 +162,7 @@ public class FortuneEconomy implements Economy {
     @Override
     public EconomyResponse depositPlayer(String player, String world, double amount) {
         Validate.isTrue(amount >= 0, "Values are required to be positive, %.2f was given.", amount);
-        return depositPlayer(Bukkit.getOfflinePlayerIfCached(player), amount);
+        return depositPlayer(player, amount);
     }
 
     @Override
@@ -150,7 +174,7 @@ public class FortuneEconomy implements Economy {
 
     @Override
     public boolean createPlayerAccount(String player) {
-        return createPlayerAccount(Bukkit.getOfflinePlayerIfCached(player));
+        return createPlayerAccount(Bukkit.getOfflinePlayer(player));
     }
 
     @Override
@@ -167,7 +191,7 @@ public class FortuneEconomy implements Economy {
 
     @Override
     public boolean createPlayerAccount(String player, String world) {
-        return createPlayerAccount(Bukkit.getOfflinePlayerIfCached(player));
+        return createPlayerAccount(Bukkit.getOfflinePlayer(player));
     }
 
     @Override

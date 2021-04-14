@@ -149,6 +149,28 @@ public class EconomyDataMySQL extends EconomyData {
     }
 
     @Override
+    public boolean userExists(String name) throws EconomyException {
+        if (isConnected()) {
+            String query = "SELECT 1 " +
+                    "FROM " + BALANCES_TABLE +
+                    " WHERE " + "name = ?;";
+            try (PreparedStatement statement = connection.prepareStatement(query)) {
+                statement.setString(1, name);
+                ResultSet set = statement.executeQuery();
+                if (set.next()) {
+                    boolean value = set.getInt(1) != 0;
+                    set.close();
+                    return value;
+                }
+                set.close();
+            } catch (SQLException e) {
+                throw new EconomyException(e.getMessage());
+            }
+        }
+        return false;
+    }
+
+    @Override
     public boolean userExists(UUID uuid) throws EconomyException {
         if (isConnected()) {
             String query = "SELECT 1 " +
@@ -261,6 +283,33 @@ public class EconomyDataMySQL extends EconomyData {
 
 
         return users;
+    }
+
+    @Override
+    public EconomyUser loadUser(String name) throws EconomyException {
+        if (isConnected()) {
+
+            String query = "SELECT uuid, name, balance " +
+                    "FROM " + BALANCES_TABLE +
+                    " WHERE " + "name = ?;";
+
+            try (PreparedStatement statement = connection.prepareStatement(query)) {
+                statement.setString(1, name);
+                ResultSet set = statement.executeQuery();
+                if (set.next()) {
+                    String id = set.getString(1);
+                    double balance = set.getDouble(3);
+                    set.close();
+                    return new EconomyUser(UUID.fromString(id), name, balance);
+                }
+
+
+                set.close();
+            } catch (SQLException e) {
+                throw new EconomyException(e.getMessage());
+            }
+        }
+        return null;
     }
 
 
