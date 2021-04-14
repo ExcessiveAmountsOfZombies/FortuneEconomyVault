@@ -88,8 +88,6 @@ public class EconomyUser {
                 }
                 data.saveUser(this);
                 transactions.clear();
-                // todo: logger
-                System.out.println("Transactions cleared for: " + this.name);
             } catch (EconomyException e) {
                 e.printStackTrace();
             }

@@ -27,18 +27,6 @@ public class BaltopCommand extends BaseCommand {
         this.data = data;
     }
 
-    public void register() {
-
-    }
-
-
-    @CommandAlias("fortune help")
-    private int helpMenu(CommandSender source) {
-        // todo: fu
-        System.out.println("todo:");
-        return 0;
-    }
-
     @CommandAlias("baltop|moneytop|balancetop")
     @Description("See who has the most money on the server.")
     @CommandCompletion("1")
