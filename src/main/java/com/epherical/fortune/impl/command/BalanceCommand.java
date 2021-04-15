@@ -151,4 +151,40 @@ public class BalanceCommand extends BaseCommand {
             e.printStackTrace();
         }
     }
+
+    @Subcommand("pay")
+    @Description("pays money to another account holder")
+    @CommandPermission("fconomy.command.balance.pay")
+    @CommandCompletion("@players 1")
+    public void payMoney(Player source, String target, double amount) {
+        try {
+            EconomyUser sourceUser = data.loadUser(source.getUniqueId());
+            EconomyUser targetUser = data.loadUser(target);
+            if (sourceUser != null && targetUser != null) {
+                if (sourceUser.equals(targetUser)) {
+                    source.sendMessage(ChatColor.of("#940000") + "You can not send money to yourself!");
+                    return;
+                }
+                data.userWithdraw(sourceUser.uuid(), amount);
+                data.userDeposit(targetUser.uuid(), amount);
+
+                String amt = amount > 1 ? economy.currencyNamePlural() : economy.currencyNameSingular();
+                if (FortunePlugin.usingPaper) {
+                    Component msg = Component.text("Sent: ").style(Style.style(TextColor.fromHexString("#8f8f8f")))
+                            .append(Component.text(economy.format(amount)).style(Style.style(TextColor.fromHexString("#3d9e00"))))
+                            .append(Component.text(" " + amt.toLowerCase(Locale.ROOT)).style(Style.style(TextColor.fromHexString("#8f8f8f")))
+                            .append(Component.text(" to ").style(Style.style(TextColor.fromHexString("#8f8f8f")))))
+                            .append(Component.text(targetUser.name()).style(Style.style(TextColor.fromHexString("#8f8f8f"))));
+                    source.sendMessage(msg, MessageType.SYSTEM);
+                } else {
+                    source.sendMessage(
+                            ChatColor.of("#8f8f8f") + "Sent: "
+                                    + ChatColor.of("#3d9e00") + economy.format(amount)
+                                    + ChatColor.of("#8f8f8f") + " to " + targetUser.name());
+                }
+            }
+        } catch (EconomyException e) {
+            e.printStackTrace();
+        }
+    }
 }
