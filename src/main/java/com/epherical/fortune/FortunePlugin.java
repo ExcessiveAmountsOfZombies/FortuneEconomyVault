@@ -11,6 +11,8 @@ import com.epherical.fortune.impl.data.EconomyDataFlatFile;
 import com.epherical.fortune.impl.data.EconomyDataMySQL;
 import com.epherical.fortune.impl.listener.PlayerListener;
 import net.milkbowl.vault.economy.Economy;
+import org.bstats.bukkit.Metrics;
+import org.bstats.charts.SingleLineChart;
 import org.bukkit.plugin.ServicePriority;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -22,12 +24,16 @@ public class FortunePlugin extends JavaPlugin {
     private BukkitCommandManager manager;
     private FortuneConfig config;
 
+    private Metrics metrics;
+
     public static boolean usingPaper;
 
     @Override
     public void onEnable() {
         this.config = new FortuneConfig(this.getDataFolder(), "config.yml");
         this.config.loadConfig();
+
+        this.metrics = new Metrics(this, 11055);
 
         if (this.config.usingDatabase()) {
             this.economyData = new EconomyDataMySQL(this.config);
