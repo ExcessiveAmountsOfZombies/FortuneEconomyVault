@@ -7,13 +7,16 @@ import com.google.common.collect.Lists;
 import net.milkbowl.vault.economy.EconomyResponse;
 
 import java.sql.*;
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.Callable;
 
 public class EconomyDataMySQL extends EconomyData {
 
     private final String TABLE_PREFIX = "fortune_";
     private final String BALANCES_TABLE = TABLE_PREFIX + "balances";
+    private final String LOGGING_TABLE = TABLE_PREFIX + "log";
 
     private Connection connection;
 
@@ -65,6 +68,17 @@ public class EconomyDataMySQL extends EconomyData {
             + "name varchar(40) NOT NULL,"
             + "balance double NOT NULL)");
 
+        query("create table if not exists " + LOGGING_TABLE +
+                "(id int auto_increment," +
+                "uuid varchar(36) not null, " +
+                "name varchar(40) null, " +
+                "amount int not null, " +
+                "balance int null, " +
+                "error varchar(255) null, " +
+                "success boolean not null," +
+                "time timestamp not null, " +
+                "constraint logging_pk " +
+                "primary key (id));");
 
         return true;
     }
@@ -231,12 +245,16 @@ public class EconomyDataMySQL extends EconomyData {
                 statement.setString(2, user.toString());
                 statement.executeUpdate();
                 cache.invalidate(user);
-                return new EconomyResponse(amount, econUser.currentBalance() + amount, EconomyResponse.ResponseType.SUCCESS, "");
+                EconomyResponse response = new EconomyResponse(amount, econUser.currentBalance() + amount, EconomyResponse.ResponseType.SUCCESS, "");
+                saveTransaction(response, user, econUser.name());
+                return response;
             } catch (SQLException e) {
                 e.printStackTrace();
             }
         }
-        return new EconomyResponse(0, 0, EconomyResponse.ResponseType.FAILURE, "");
+        EconomyResponse response = new EconomyResponse(0, 0, EconomyResponse.ResponseType.FAILURE, "");
+        saveTransaction(response, user, "");
+        return response;
     }
 
     @Override
@@ -253,12 +271,16 @@ public class EconomyDataMySQL extends EconomyData {
                 statement.setString(2, user.toString());
                 statement.executeUpdate();
                 cache.invalidate(user);
-                return new EconomyResponse(amount, econUser.currentBalance() - amount, EconomyResponse.ResponseType.SUCCESS, "");
+                EconomyResponse response = new EconomyResponse(amount, econUser.currentBalance() - amount, EconomyResponse.ResponseType.SUCCESS, "");
+                saveTransaction(response, user, econUser.name());
+                return response;
             } catch (SQLException e) {
                 e.printStackTrace();
             }
         }
-        return new EconomyResponse(0, 0, EconomyResponse.ResponseType.FAILURE, "");
+        EconomyResponse response = new EconomyResponse(0, 0, EconomyResponse.ResponseType.FAILURE, "");
+        saveTransaction(response, user, "");
+        return response;
     }
 
     @Override
@@ -283,6 +305,32 @@ public class EconomyDataMySQL extends EconomyData {
 
 
         return users;
+    }
+
+    @Override
+    public Callable<Boolean> logTransaction(EconomyResponse response, UUID uuid, String name) {
+        return () -> {
+            if (isConnected()) {
+                String query = "INSERT INTO " + LOGGING_TABLE + " " +
+                        "(uuid, name, amount, balance, error, success, time)" +
+                        " VALUES (?, ?, ?, ?, ?, ?, ?)";
+
+                try (PreparedStatement statement = connection.prepareStatement(query)) {
+                    statement.setString(1, uuid.toString());
+                    statement.setString(2, name);
+                    statement.setDouble(3, response.amount);
+                    statement.setDouble(4, response.balance);
+                    statement.setString(5, response.errorMessage);
+                    statement.setBoolean(6, response.transactionSuccess());
+                    statement.setTimestamp(7, Timestamp.from(Instant.now()));
+                    statement.executeUpdate();
+                    return true;
+                } catch (SQLException e) {
+                    throw new EconomyException(e.getMessage());
+                }
+            }
+            return false;
+        };
     }
 
     @Override

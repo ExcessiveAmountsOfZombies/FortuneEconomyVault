@@ -61,12 +61,18 @@ public abstract class EconomyData {
 
     public abstract List<EconomyUser> users();
 
+    public abstract Callable<Boolean> logTransaction(EconomyResponse response, UUID uuid, String name);
+
     private Callable<EconomyUser> callUser(UUID uuid) {
         return () -> {
             EconomyUser user = loadUser(uuid);
             user.applyFuture(saveSchedule.scheduleAtFixedRate(user.scheduleSave(EconomyData.this), 1L, 1L, TimeUnit.SECONDS));
             return user;
         };
+    }
+
+    public void saveTransaction(EconomyResponse response, UUID uuid, String name) {
+        saveSchedule.schedule(logTransaction(response, uuid, name), 0L, TimeUnit.SECONDS);
     }
 
     public EconomyUser getUser(UUID uuid) {

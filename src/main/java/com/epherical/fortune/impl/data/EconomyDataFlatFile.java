@@ -13,23 +13,28 @@ import net.milkbowl.vault.economy.EconomyResponse;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
 
 public class EconomyDataFlatFile extends EconomyData {
 
     private final Path userFolder;
+    private final Path logFolder;
 
     private final Gson gson;
 
     private Map<String, UUID> userCache = new HashMap<>();
+    private final Object logLock = new Object();
 
     public EconomyDataFlatFile(Path dataFolder) {
         super();
         this.userFolder = dataFolder.resolve("balances");
+        this.logFolder = dataFolder.resolve("logs");
         this.gson = new GsonBuilder()
                 .setPrettyPrinting()
                 .registerTypeAdapter(EconomyUser.class, new EconomyUserSerializer())
@@ -99,10 +104,14 @@ public class EconomyDataFlatFile extends EconomyData {
         try {
             EconomyUser econUser = getUser(user);
             econUser.add(amount);
-            return new EconomyResponse(amount, econUser.currentBalance(), EconomyResponse.ResponseType.SUCCESS, "");
+            EconomyResponse response = new EconomyResponse(amount, econUser.currentBalance(), EconomyResponse.ResponseType.SUCCESS, "");
+            saveTransaction(response, user, econUser.name());
+            return response;
         } catch (IllegalArgumentException e) {
             e.printStackTrace();
-            return new EconomyResponse(0, 0, EconomyResponse.ResponseType.FAILURE, e.getMessage());
+            EconomyResponse response = new EconomyResponse(0, 0, EconomyResponse.ResponseType.FAILURE, e.getMessage());
+            saveTransaction(response, user, "");
+            return response;
         }
     }
 
@@ -111,10 +120,14 @@ public class EconomyDataFlatFile extends EconomyData {
         try {
             EconomyUser econUser = getUser(user);
             econUser.subtract(amount);
-            return new EconomyResponse(amount, econUser.currentBalance(), EconomyResponse.ResponseType.SUCCESS, "");
+            EconomyResponse response = new EconomyResponse(amount, econUser.currentBalance(), EconomyResponse.ResponseType.SUCCESS, "");
+            saveTransaction(response, user, econUser.name());
+            return response;
         } catch (IllegalArgumentException e) {
             e.printStackTrace();
-            return new EconomyResponse(0, 0, EconomyResponse.ResponseType.FAILURE, e.getMessage());
+            EconomyResponse response = new EconomyResponse(0, 0, EconomyResponse.ResponseType.FAILURE, e.getMessage());
+            saveTransaction(response, user, "");
+            return response;
         }
     }
 
@@ -142,5 +155,38 @@ public class EconomyDataFlatFile extends EconomyData {
             e.printStackTrace();
         }
         return users;
+    }
+
+    @Override
+    public Callable<Boolean> logTransaction(EconomyResponse response, UUID uuid, String name) {
+        return () -> {
+            String fileName = LocalDateTime.now().toLocalDate().toString() + ".json";
+            File file = logFolder.resolve(fileName).toFile();
+            if (!file.exists()) {
+                try {
+                    file.getParentFile().mkdirs();
+                    file.createNewFile();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            } else {
+                synchronized (logLock) {
+                    JsonObject object = new JsonObject();
+                    object.addProperty("amount", response.amount);
+                    object.addProperty("balance", response.balance);
+                    object.addProperty("success", response.transactionSuccess());
+                    object.addProperty("opt_error", response.errorMessage);
+                    object.addProperty("uuid", uuid.toString());
+                    object.addProperty("name", name);
+                    try (FileWriter writer = new FileWriter(file, true)) {
+                        writer.write(gson.toJson(object) + ",\n");
+                        return true;
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+            return false;
+        };
     }
 }

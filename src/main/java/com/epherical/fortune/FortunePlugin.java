@@ -12,7 +12,6 @@ import com.epherical.fortune.impl.data.EconomyDataMySQL;
 import com.epherical.fortune.impl.listener.PlayerListener;
 import net.milkbowl.vault.economy.Economy;
 import org.bstats.bukkit.Metrics;
-import org.bstats.charts.SingleLineChart;
 import org.bukkit.plugin.ServicePriority;
 import org.bukkit.plugin.java.JavaPlugin;
 
