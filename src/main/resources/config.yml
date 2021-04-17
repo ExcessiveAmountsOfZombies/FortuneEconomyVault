@@ -5,6 +5,7 @@ storage-type: "JSON"
 # using json for multiple servers. Not recommended. ex: "../../../data".
 data-path: ""
 ## if you're using MYSQL make sure to fill this out.
+logging: true
 mysql:
   host-ip: ""
   username: ""
