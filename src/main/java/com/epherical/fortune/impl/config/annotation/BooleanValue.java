@@ -9,5 +9,6 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface BooleanValue {
     boolean value();
-    String key() default "";
+    String configPath() default "";
+    String comment() default "";
 }
