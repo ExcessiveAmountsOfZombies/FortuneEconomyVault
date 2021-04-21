@@ -11,4 +11,11 @@ public @interface StringValue {
     String value();
     String configPath() default "";
     String comment() default "";
+
+    /**
+     * This should be used if you want to migrate your variable names to another system. If they are nested, separate them with /
+     * ex: jim/jones/real-key
+     * @return an array of old variable names.
+     */
+    String[] oldVars() default "";
 }

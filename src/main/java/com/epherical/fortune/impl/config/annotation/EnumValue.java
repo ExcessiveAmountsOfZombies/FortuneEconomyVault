@@ -12,4 +12,5 @@ public @interface EnumValue {
     String value();
     String configPath() default "";
     String comment() default "";
+    String[] oldVars() default "";
 }

@@ -11,4 +11,5 @@ public @interface BooleanValue {
     boolean value();
     String configPath() default "";
     String comment() default "";
+    String[] oldVars() default "";
 }

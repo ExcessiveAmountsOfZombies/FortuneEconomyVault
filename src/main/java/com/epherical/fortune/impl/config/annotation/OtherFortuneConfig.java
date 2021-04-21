@@ -2,7 +2,7 @@ package com.epherical.fortune.impl.config.annotation;
 
 import com.epherical.fortune.impl.config.FortuneConfig;
 
-public class OtherFortuneConfig implements ConfigClass {
+public class OtherFortuneConfig {
 
     @IntegerValue(value = 1, comment = "Do not edit this value, it is for upgrading the config.")
     private int configVersion;
@@ -11,13 +11,13 @@ public class OtherFortuneConfig implements ConfigClass {
     private boolean logging;
 
     @StringValue(value = "", comment = "A relative data path for flat file storage," +
-            " This can be used if you wanted to have a global balance system with flat files. EX: ../../../data")
+            " This can be used if you wanted to have a global balance system with flat files. EX: ../../../data", oldVars = {"data-path"})
     private String dataPath;
 
-    @EnumValue(clazz = FortuneConfig.StorageType.class, value = "JSON", comment = "Two data storage options, MYSQL or JSON")
+    @EnumValue(clazz = FortuneConfig.StorageType.class, value = "JSON", comment = "Two data storage options, MYSQL or JSON", oldVars = {"storage-type"})
     private FortuneConfig.StorageType storageType;
 
-    @StringValue(value = "", configPath = "mysql")
+    @StringValue(value = "", configPath = "mysql", oldVars = {"host-ip"})
     private String hostIP;
 
     @StringValue(value = "", configPath = "mysql")

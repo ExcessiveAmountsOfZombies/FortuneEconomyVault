@@ -11,4 +11,5 @@ public @interface IntegerValue {
     int value();
     String configPath() default "";
     String comment() default "";
+    String[] oldVars() default "";
 }

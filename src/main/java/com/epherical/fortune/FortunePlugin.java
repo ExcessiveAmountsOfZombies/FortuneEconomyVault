@@ -6,6 +6,8 @@ import com.epherical.fortune.impl.FortuneEconomy;
 import com.epherical.fortune.impl.command.BalanceCommand;
 import com.epherical.fortune.impl.command.BaltopCommand;
 import com.epherical.fortune.impl.config.FortuneConfig;
+import com.epherical.fortune.impl.config.annotation.ConfigParser;
+import com.epherical.fortune.impl.config.annotation.OtherFortuneConfig;
 import com.epherical.fortune.impl.data.EconomyData;
 import com.epherical.fortune.impl.data.EconomyDataFlatFile;
 import com.epherical.fortune.impl.data.EconomyDataMySQL;
@@ -14,6 +16,8 @@ import net.milkbowl.vault.economy.Economy;
 import org.bstats.bukkit.Metrics;
 import org.bukkit.plugin.ServicePriority;
 import org.bukkit.plugin.java.JavaPlugin;
+
+import java.lang.reflect.InvocationTargetException;
 
 
 public class FortunePlugin extends JavaPlugin {
@@ -31,6 +35,12 @@ public class FortunePlugin extends JavaPlugin {
     public void onEnable() {
         this.config = new FortuneConfig(this.getDataFolder(), "config.yml");
         this.config.loadConfig();
+        ConfigParser<OtherFortuneConfig> configConfigParser = new ConfigParser<>(OtherFortuneConfig.class, this.getDataFolder(), "config.yml");
+        try {
+            configConfigParser.parseConfig();
+        } catch (InstantiationException | IllegalAccessException | NoSuchFieldException | InvocationTargetException | NoSuchMethodException e) {
+            e.printStackTrace();
+        }
 
         this.metrics = new Metrics(this, 11055);
 
