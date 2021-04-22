@@ -1,55 +1,51 @@
 package com.epherical.fortune.impl.config;
 
-import java.io.File;
-import java.util.Locale;
+import com.epherical.fortune.impl.config.annotation.BooleanValue;
+import com.epherical.fortune.impl.config.annotation.EnumValue;
+import com.epherical.fortune.impl.config.annotation.IntegerValue;
+import com.epherical.fortune.impl.config.annotation.StringValue;
 
-public class FortuneConfig extends DefaultConfig {
+public class FortuneConfig {
 
-    private StorageType type;
+    @IntegerValue(value = 1, comment = "Do not edit this value, it is for upgrading the config.")
+    private int configVersion;
+
+    @BooleanValue(value = true, comment = "Enables or disables transaction logging. enabled by default.")
+    private boolean logging;
+
+    @StringValue(value = "", comment = "A relative data path for flat file storage," +
+            " This can be used if you wanted to have a global balance system with flat files. EX: ../../../data", oldVars = {"data-path"})
     private String dataPath;
 
+    @EnumValue(clazz = StorageType.class, value = "JSON", comment = "Two data storage options, MYSQL or JSON", oldVars = {"storage-type"})
+    private StorageType storageType;
+
+    @StringValue(value = "", configPath = "mysql", oldVars = {"host-ip"})
     private String hostIP;
+
+    @StringValue(value = "", configPath = "mysql")
     private String username;
+
+    @StringValue(value = "", configPath = "mysql")
     private String password;
-    private String databaseName;
+
+    @StringValue(value = "", configPath = "mysql")
+    private String dbname;
+
+    @IntegerValue(value = 0, configPath = "mysql")
     private int port;
 
-    public FortuneConfig(File dataFolder, String configName) {
-        super(dataFolder, configName);
+    public FortuneConfig() {
+
     }
 
-    @Override
-    public boolean loadConfig() {
-        if (!super.loadConfig()) {
-            return false;
-        }
-
-        try {
-            String typeString = conf.getString("storage-type", "JSON");
-            type = StorageType.valueOf(typeString.toUpperCase(Locale.ROOT));
-
-            this.dataPath = conf.getString("data-path", "");
-
-            this.hostIP = conf.getString("mysql/host-ip", "");
-            this.username = conf.getString("mysql/username", "");
-            this.password = conf.getString("mysql/password", "");
-            this.databaseName = conf.getString("mysql/dbname", "");
-            this.port = conf.getInt("mysql/port", 0);
-
-            return true;
-        } catch (IllegalArgumentException e) {
-            LOGGER.warn("storage-type was not expected value. Make sure the value matches what is in the config.", e);
-        }
-
-        return false;
-    }
 
     public boolean usingDatabase() {
-        return this.type == StorageType.MYSQL;
+        return this.storageType == StorageType.MYSQL;
     }
 
     public StorageType storageType() {
-        return type;
+        return storageType;
     }
 
     public String dataPath() {
@@ -69,17 +65,30 @@ public class FortuneConfig extends DefaultConfig {
     }
 
     public String databaseName() {
-        return databaseName;
+        return dbname;
     }
 
     public int port() {
         return port;
     }
 
-
-
     public enum StorageType {
         MYSQL,
         JSON
+    }
+
+    @Override
+    public String toString() {
+        return "OtherFortuneConfig{" +
+                "configVersion=" + configVersion +
+                ", logging=" + logging +
+                ", dataPath='" + dataPath + '\'' +
+                ", storageType=" + storageType +
+                ", hostIP='" + hostIP + '\'' +
+                ", username='" + username + '\'' +
+                ", password='" + password + '\'' +
+                ", dbname='" + dbname + '\'' +
+                ", port=" + port +
+                '}';
     }
 }
