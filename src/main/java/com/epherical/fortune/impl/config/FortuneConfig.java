@@ -35,10 +35,16 @@ public class FortuneConfig {
     @IntegerValue(value = 0, configPath = "mysql")
     private int port;
 
+    @BooleanValue(value = true, comment = "true if you want to use bstats, false if not.")
+    private boolean useBstats;
+
     public FortuneConfig() {
 
     }
 
+    public boolean usingBstats() {
+        return useBstats;
+    }
 
     public boolean usingDatabase() {
         return this.storageType == StorageType.MYSQL;

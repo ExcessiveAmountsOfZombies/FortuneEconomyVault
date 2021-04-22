@@ -33,7 +33,9 @@ public class FortunePlugin extends JavaPlugin {
         Configuration<FortuneConfig> config = new Configuration<>(FortuneConfig.class, this.getDataFolder(), "config.yml");
         this.config = config.loadConfig();
 
-        this.metrics = new Metrics(this, 11055);
+        if (this.config.usingBstats()) {
+            this.metrics = new Metrics(this, 11055);
+        }
 
         if (this.config.usingDatabase()) {
             this.economyData = new EconomyDataMySQL(this.config);
