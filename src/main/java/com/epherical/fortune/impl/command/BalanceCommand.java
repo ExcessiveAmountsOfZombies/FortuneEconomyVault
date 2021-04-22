@@ -33,7 +33,6 @@ public class BalanceCommand extends BaseCommand {
     @CommandCompletion("@players")
     @Syntax("<player>")
     private void checkBalance(Player source, @Optional String target) {
-        long beginNano = System.nanoTime();
         try {
             if (target == null) {
                 target = source.getName();
@@ -63,9 +62,6 @@ public class BalanceCommand extends BaseCommand {
                     source.sendMessage(ChatColor.of("#940000") + "That player could not be found!");
                 }
             }
-
-            long endTime = System.nanoTime();
-            System.out.println((endTime - beginNano) / 1000000);
         } catch (IllegalArgumentException | EconomyException e) {
             e.printStackTrace();
         }

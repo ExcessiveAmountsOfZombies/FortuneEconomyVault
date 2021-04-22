@@ -105,7 +105,7 @@ public class Configuration<T> {
 
                 if (annotation.annotationType().equals(EnumValue.class)) {
                     EnumValue enumValue = (EnumValue) annotation;
-                    field.set(instance, enumValue.clazz().getMethod("valueOf", String.class).invoke(enumValue.clazz(), enumValue.value()));
+                    field.set(instance, enumValue.clazz().getMethod("valueOf", String.class).invoke(enumValue.clazz(), value.toString().toUpperCase()));
                 } else {
                     field.set(instance, value);
                 }

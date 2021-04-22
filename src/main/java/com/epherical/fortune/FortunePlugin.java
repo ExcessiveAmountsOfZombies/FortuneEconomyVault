@@ -40,7 +40,7 @@ public class FortunePlugin extends JavaPlugin {
         if (this.config.usingDatabase()) {
             this.economyData = new EconomyDataMySQL(this.config);
         } else {
-            this.economyData = new EconomyDataFlatFile(this.getDataFolder().toPath().resolve(this.config.dataPath()));
+            this.economyData = new EconomyDataFlatFile(this.config, this.getDataFolder().toPath().resolve(this.config.dataPath()));
         }
 
         this.economy = new FortuneEconomy(this);

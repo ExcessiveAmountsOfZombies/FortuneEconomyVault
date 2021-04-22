@@ -15,10 +15,7 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
 
@@ -40,7 +37,7 @@ public class EconomyDataFlatFile extends EconomyData {
                 .setPrettyPrinting()
                 .registerTypeAdapter(EconomyUser.class, new EconomyUserSerializer())
                 .create();
-
+        users().forEach(user -> userCache.putIfAbsent(user.name().toLowerCase(), user.uuid()));
     }
 
     @Override
@@ -49,7 +46,7 @@ public class EconomyDataFlatFile extends EconomyData {
             File file = new File(userFolder.resolve(uuid.toString()).toFile() + ".json");
             try (FileReader reader = new FileReader(file)) {
                 EconomyUser user = gson.fromJson(reader, EconomyUser.class);
-                userCache.putIfAbsent(user.name(), user.uuid());
+                userCache.putIfAbsent(user.name().toLowerCase(), user.uuid());
                 return user;
             }
         } catch (IOException e) {
@@ -59,13 +56,13 @@ public class EconomyDataFlatFile extends EconomyData {
 
     @Override
     public EconomyUser loadUser(String name) {
-        UUID value = userCache.getOrDefault(name, null);
+        UUID value = userCache.getOrDefault(name.toLowerCase(), null);
         return value != null ? getUser(value) : null;
     }
 
     @Override
     public boolean userExists(String name) {
-        return userCache.containsKey(name);
+        return userCache.containsKey(name.toLowerCase());
     }
 
     @Override
@@ -79,6 +76,7 @@ public class EconomyDataFlatFile extends EconomyData {
         EconomyUser freshUser = null;
         if (!file.exists()) {
             try {
+                userCache.putIfAbsent(user.name().toLowerCase(), user.uuid());
                 file.getParentFile().mkdirs();
                 file.createNewFile();
             } catch (IOException e) {
