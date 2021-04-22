@@ -27,7 +27,7 @@ public class EconomyDataMySQL extends EconomyData {
     private final int port;
 
     public EconomyDataMySQL(FortuneConfig config) {
-        super();
+        super(config);
         this.hostIP = config.hostIP();
         this.username = config.username();
         this.password = config.password();
@@ -310,6 +310,9 @@ public class EconomyDataMySQL extends EconomyData {
     @Override
     public Callable<Boolean> logTransaction(EconomyResponse response, UUID uuid, String name) {
         return () -> {
+            if (!config.logTransactions()) {
+                return false;
+            }
             if (isConnected()) {
                 String query = "INSERT INTO " + LOGGING_TABLE + " " +
                         "(uuid, name, amount, balance, error, success, time)" +

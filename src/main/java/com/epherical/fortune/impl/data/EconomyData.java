@@ -1,5 +1,6 @@
 package com.epherical.fortune.impl.data;
 
+import com.epherical.fortune.impl.config.FortuneConfig;
 import com.epherical.fortune.impl.exception.EconomyException;
 import com.epherical.fortune.impl.object.EconomyUser;
 import com.google.common.cache.CacheBuilder;
@@ -12,10 +13,10 @@ import java.util.UUID;
 import java.util.concurrent.*;
 
 public abstract class EconomyData {
+    protected FortuneConfig config;
+    protected ScheduledExecutorService saveSchedule = Executors.newSingleThreadScheduledExecutor();
 
-    ScheduledExecutorService saveSchedule = Executors.newSingleThreadScheduledExecutor();
-
-    LoadingCache<UUID, EconomyUser> cache = CacheBuilder.newBuilder()
+    protected LoadingCache<UUID, EconomyUser> cache = CacheBuilder.newBuilder()
             .expireAfterAccess(20, TimeUnit.SECONDS)
             .expireAfterWrite(20, TimeUnit.SECONDS)
             .removalListener(notification -> {
@@ -29,7 +30,7 @@ public abstract class EconomyData {
         }
     });
 
-    public EconomyData() {
+    public EconomyData(FortuneConfig config) {
         saveSchedule.scheduleAtFixedRate(() -> cache.cleanUp(), 1L, 1L, TimeUnit.MINUTES);
     }
 

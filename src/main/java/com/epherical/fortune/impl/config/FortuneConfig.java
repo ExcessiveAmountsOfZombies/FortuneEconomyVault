@@ -10,7 +10,7 @@ public class FortuneConfig {
     @IntegerValue(value = 1, comment = "Do not edit this value, it is for upgrading the config.")
     private int configVersion;
 
-    @BooleanValue(value = true, comment = "Enables or disables transaction logging. enabled by default.")
+    @BooleanValue(value = false, comment = "Enables or disables transaction logging. disabled by default.")
     private boolean logging;
 
     @StringValue(value = "", comment = "A relative data path for flat file storage," +
@@ -44,6 +44,10 @@ public class FortuneConfig {
 
     public boolean usingBstats() {
         return useBstats;
+    }
+
+    public boolean logTransactions() {
+        return logging;
     }
 
     public boolean usingDatabase() {

@@ -1,5 +1,6 @@
 package com.epherical.fortune.impl.data;
 
+import com.epherical.fortune.impl.config.FortuneConfig;
 import com.epherical.fortune.impl.data.serializer.EconomyUserSerializer;
 import com.epherical.fortune.impl.exception.EconomyException;
 import com.epherical.fortune.impl.object.EconomyUser;
@@ -31,8 +32,8 @@ public class EconomyDataFlatFile extends EconomyData {
     private Map<String, UUID> userCache = new HashMap<>();
     private final Object logLock = new Object();
 
-    public EconomyDataFlatFile(Path dataFolder) {
-        super();
+    public EconomyDataFlatFile(FortuneConfig config, Path dataFolder) {
+        super(config);
         this.userFolder = dataFolder.resolve("balances");
         this.logFolder = dataFolder.resolve("logs");
         this.gson = new GsonBuilder()
@@ -160,6 +161,9 @@ public class EconomyDataFlatFile extends EconomyData {
     @Override
     public Callable<Boolean> logTransaction(EconomyResponse response, UUID uuid, String name) {
         return () -> {
+            if (!config.logTransactions()) {
+                return false;
+            }
             String fileName = LocalDateTime.now().toLocalDate().toString() + ".json";
             File file = logFolder.resolve(fileName).toFile();
             if (!file.exists()) {
